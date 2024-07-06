@@ -179,10 +179,27 @@ class Interface(Inference):
     def summary_funct(self):
         
         if not self.bascule_summary:
+            
             self.input_text.configure(width=SIZE_OF_WDT)
             self.summary_box.grid(row=1, column=1)
             self.button_summary.configure(text='hide summary')
             self.bascule_summary = True
+            
+            pbt_ai = self.info_inference['probability_ai']
+            pbt_h = self.info_inference['probability_human']
+            verdict_ = self.info_inference['verdict']
+            print(verdict_)
+            if verdict_ == 0 : sujet, sujet_2, sujet_3, one, sec = "par une IA", "de l'AI", "humaine", pbt_ai, pbt_h
+            elif verdict_ == 1 : sujet, sujet_2, sujet_3, one, sec = "par un Humain", "Humaine", "d'une IA", pbt_h, pbt_ai
+            elif verdict_ == 3 : sujet, sujet_2, sujet_3, one, sec, = "de l'IA", "de l'AI", "humaine", pbt_ai, pbt_h
+            elif verdict_ == 4 : sujet, sujet_2, sujet_3, one, sec, = "de l'Humain", "de l'AI", "humaine", pbt_h, pbt_h
+            
+            if verdict_ in (0,1) : text_summary_ = f"le texte soumit est un texte generé par {sujet}. la participation {sujet_2} dans la redaction du texte est estimée à {one}% pour seulement {sec}% de participation {sujet_3} "
+            
+            else : text_summary_ = f"le texte soumit est un texte qui presente de variante mixte, il s'agit là d'un texte presentant un equilibre dans la participation de l'Humain et L'IA, mais avec une predominence {sujet} presentant un taux de participation de {one}%"
+            self.summary_box.delete(1.0, customtkinter.END)
+            self.summary_box.insert(customtkinter.END, text_summary_)
+            
             
         else:
             self.input_text.configure(width = 1000)
@@ -205,7 +222,7 @@ class Interface(Inference):
         self.input_text.grid(row=1, column=0, padx=10)
         
 
-        self.summary_box = customtkinter.CTkTextbox(self.frame_, width=SIZE_OF_WDT, height=500,  wrap=customtkinter.WORD,insertwidth=8 , font=("courier", 15, 'italic'), corner_radius=0, border_width=1, border_color='gray')
+        self.summary_box = customtkinter.CTkTextbox(self.frame_, width=SIZE_OF_WDT, height=500,  wrap=customtkinter.WORD,insertwidth=8 , font=("courier", 15, 'italic'), corner_radius=10, border_width=0, border_color='gray')
         #self.summary_box.grid(row=1, column=1)
         #self.summary_box.grid_forget()
         

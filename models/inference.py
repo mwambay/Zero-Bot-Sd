@@ -14,11 +14,14 @@ class Inference(Calculation):
     
     def __init__(self) -> None:
         pass
-
+    
     def initial(self):
         self.optimizer = Optimizer()
         self.observer = Observer("observation")
         self.model = GPT2PPL()
+        self.info_inference = {'probability_ai' : 0.0,
+                               'probability_human': 0.0}
+
         super()      
 
     def inference(self, lines, use_multiprocessing):
@@ -65,28 +68,40 @@ class Inference(Calculation):
             label = int(result[0].get('label'))  
             verdict = result[-1]
             probability = get_prob[0] if label == 0 else get_prob[1]
-            
-            if label ==  0 and get_prob[0] < 50 and get_prob[1] >= 55:
+            print("befire")
+            if label ==  1 and get_prob[0] < 50 and get_prob[1] >= 55:
                 probability = get_prob[1]
                 verdict = "Texte generé par un Humain."
+                verdict_info = 1
+                print("kmdsfgderdmkflvmkld")
                 
-            elif label == 1 and get_prob[1] < 50 and get_prob[0] >= 55:
+            elif label == 0 and get_prob[1] < 50 and get_prob[0] >= 55:
                 probability = get_prob[0]
                 verdict = "Texte generé par une IA."
+                verdict_info = 0
+                print("22")
+
                 
             elif (get_prob[0] >= 50 and get_prob[0] <= 55) or (get_prob[1] >= 50 and get_prob[1] <= 55):
                 
                 if get_prob[0] > get_prob[1]:
                     verdict = "Texte Mixte(Ai predominent)"
                     probability = get_prob[0]
+                    verdict_info = 3
+                    print("33")
+
                 else:  
                     verdict = "Texte Mixte(Humain predominent)"
                     probability = get_prob[1]
+                    verdict_info = 4
+                    print("jw")
+
                     
             # if label == 1:
             #     verdict = "Texte generé par un Humain."
             # else:
             #     verdict = "Texte generé par une IA."
+            print("after")
             self.observer.stop()
             self.parameter.delete(1.0, customtkinter.END)
             self.parameter.tag_config("token", foreground = "blue")
@@ -144,8 +159,11 @@ class Inference(Calculation):
             self.graph_progress(self.probability_human, int(pbt[1]))
             self.label_graph_humain.configure(text = f" Graph Humain ({pbt[1]}%)")
             self.label_graph_ai.configure(text = f" Graph AI ({pbt[0]}%)")
+            print("end")
+
 
         else:
+            print("esle")
             self.observer.stop()
             #self.reset_parameter()
             self.parameter.delete(1.0, customtkinter.END)
@@ -161,7 +179,26 @@ class Inference(Calculation):
             self.parameter.insert(customtkinter.END, " Probability : unavailable", 'prob') 
             
             
-
+        self.info_inference['probability_ai'] = pbt[0]
+        self.info_inference['probability_human'] = pbt[1]
+        self.info_inference['verdict'] = verdict_info
+        
+        if self.bascule_summary:
+            pbt_ai = self.info_inference['probability_ai']
+            pbt_h = self.info_inference['probability_human']
+            verdict_ = self.info_inference['verdict']
+            print(verdict_)
+            if verdict_ == 0 : sujet, sujet_2, sujet_3, one, sec = "par une IA", "de l'AI", "humaine", pbt_ai, pbt_h
+            elif verdict_ == 1 : sujet, sujet_2, sujet_3, one, sec = "par un Humain", "Humaine", "d'une IA", pbt_h, pbt_ai
+            elif verdict_ == 3 : sujet, sujet_2, sujet_3, one, sec, = "de l'IA", "de l'AI", "humaine", pbt_ai, pbt_h
+            elif verdict_ == 4 : sujet, sujet_2, sujet_3, one, sec, = "de l'Humain", "de l'AI", "humaine", pbt_h, pbt_h
+            
+            if verdict_ in (0,1) : text_summary_ = f"le texte soumit est un texte generé par {sujet}. la participation {sujet_2} dans la redaction du texte est estimée à {one}% pour seulement {sec}% de participation {sujet_3} "
+            
+            else : text_summary_ = f"le texte soumit est un texte qui presente de variante mixte, il s'agit là d'un texte presentant un equilibre dans la participation de l'Humain et L'IA, mais avec une predominence {sujet} presentant un taux de participation de {one}%"
+            self.summary_box.delete(1.0, customtkinter.END)
+            self.summary_box.insert(customtkinter.END, text_summary_)
+                    
         return result
 
 
